@@ -1,0 +1,11 @@
+{
+  "name": "Larp",
+  "description": "Client-side profile customization plugin.",
+  "authors": [
+    {
+      "name": "sys"
+    }
+  ],
+  "main": "index.js",
+  "hash": "32bf3f0f211e4cbe"
+}
