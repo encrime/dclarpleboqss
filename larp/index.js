@@ -1731,9 +1731,133 @@
    * We do NOT touch Discord's internal Snowflake
    * conversion functions.
    */
-  function patchSnowflakeConvertersForAccountDate() {
-    return;
+function patchSnowflakeConvertersForAccountDate() {
+  try {
+    var spoofMs = function () {
+      return parseAccountDateIsoMs(
+        storage.spoofAccountDateIso
+      );
+    };
+
+    /*
+     * Discord utilise généralement SnowflakeUtils.extractTimestamp()
+     * pour calculer "Member Since" à partir du user.id.
+     *
+     * On ne modifie QUE le timestamp de currentUserId.
+     * Les IDs des autres utilisateurs restent totalement normaux.
+     */
+    var SnowflakeUtils = null;
+
+    try {
+      SnowflakeUtils = findByProps(
+        "extractTimestamp",
+        "fromTimestamp"
+      );
+    } catch (_) {}
+
+    if (
+      SnowflakeUtils &&
+      typeof SnowflakeUtils.extractTimestamp ===
+        "function"
+    ) {
+      unpatches.push(
+        after(
+          "extractTimestamp",
+          SnowflakeUtils,
+          function (args, ret) {
+            var ms = spoofMs();
+
+            if (
+              ms == null ||
+              currentUserId == null ||
+              !args ||
+              args.length === 0
+            ) {
+              return ret;
+            }
+
+            var id = args[0];
+
+            if (id == null) {
+              return ret;
+            }
+
+            if (
+              String(id) ===
+              String(currentUserId)
+            ) {
+              return ms;
+            }
+
+            return ret;
+          }
+        )
+      );
+    }
+
+    /*
+     * Certaines versions de Discord exposent aussi
+     * getCreatedAt() au lieu d'appeler directement
+     * extractTimestamp().
+     */
+    var SnowflakeUtils2 = null;
+
+    try {
+      SnowflakeUtils2 = findByProps(
+        "getCreatedAt",
+        "extractTimestamp"
+      );
+    } catch (_) {}
+
+    if (
+      SnowflakeUtils2 &&
+      SnowflakeUtils2 !== SnowflakeUtils &&
+      typeof SnowflakeUtils2.getCreatedAt ===
+        "function"
+    ) {
+      unpatches.push(
+        after(
+          "getCreatedAt",
+          SnowflakeUtils2,
+          function (args, ret) {
+            var ms = spoofMs();
+
+            if (
+              ms == null ||
+              currentUserId == null ||
+              !args ||
+              args.length === 0
+            ) {
+              return ret;
+            }
+
+            var id = args[0];
+
+            if (
+              id != null &&
+              String(id) ===
+                String(currentUserId)
+            ) {
+              return new Date(ms);
+            }
+
+            return ret;
+          }
+        )
+      );
+    }
+
+    console.log(
+      "[Larp] Snowflake date patch installed",
+      !!SnowflakeUtils
+    );
+  } catch (e) {
+    console.error(
+      "[Larp] Snowflake date patch failed",
+      e
+    );
   }
+}
 
   function patchUserProfileRecordMemberSince() {
     try {
