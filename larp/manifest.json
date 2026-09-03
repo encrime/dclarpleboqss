@@ -1,0 +1,14 @@
+{
+  "name": "Larp",
+  "description": "Local profile customization plugin.",
+  "authors": [
+    {
+      "name": "sys"
+    }
+  ],
+  "main": "index.js",
+  "hash": "REPLACED_AT_BUILD_TIME",
+  "vendetta": {
+    "icon": "MaskIcon"
+  }
+}
