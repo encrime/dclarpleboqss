@@ -1,14 +1,14 @@
 {
-  "name": "Dc larp",
-  "description": "bro",
+  "name": "Larp",
+  "description": "Local profile customization plugin.",
   "authors": [
     {
-      "name": "sys",
-      "id": "1522387688328663052"
+      "name": "sys"
     }
   ],
-  "main": "Discord.js",
+  "main": "index.js",
+  "hash": "REPLACED_AT_BUILD_TIME",
   "vendetta": {
-    "icon": "ChatPlusIcon"
+    "icon": "MaskIcon"
   }
 }
