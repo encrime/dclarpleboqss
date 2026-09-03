@@ -1,0 +1,64 @@
+name: Build Larp Plugin
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build plugin
+        run: |
+          mkdir -p dist/plugins/builds/larp
+          node - <<'NODE'
+          const fs = require("fs");
+          const crypto = require("crypto");
+
+          const source = fs.readFileSync("larp/index.js", "utf8");
+          const manifest = JSON.parse(fs.readFileSync("larp/manifest.json", "utf8"));
+
+          const hash = crypto
+            .createHash("sha256")
+            .update(source)
+            .digest("hex")
+            .slice(0, 16);
+
+          manifest.hash = hash;
+
+          fs.writeFileSync(
+            "dist/plugins/builds/larp/index.js",
+            source
+          );
+
+          fs.writeFileSync(
+            "dist/plugins/builds/larp/manifest.json",
+            JSON.stringify(manifest, null, 2)
+          );
+          NODE
+
+      - name: Publish dist branch
+        run: |
+          cd dist
+          git init -b dist
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Build Larp plugin"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
