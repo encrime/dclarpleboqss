@@ -1,0 +1,14 @@
+{
+  "name": "Dc larp",
+  "description": "bro",
+  "authors": [
+    {
+      "name": "sys",
+      "id": "1522387688328663052"
+    }
+  ],
+  "main": "Discord.js",
+  "vendetta": {
+    "icon": "ChatPlusIcon"
+  }
+}
